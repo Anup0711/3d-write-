@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Text Studio Pro – Advanced Motion Editor</title>
+    <!-- Tailwind CSS Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts Framework for UI Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome Vector Graphics -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #030712;
+            color: #f9fafb;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+        }
+        .jetbrains-mono { font-family: 'JetBrains Mono', monospace; }
+        /* Ultra-Smooth Premium Glassmorphism */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        /* Custom UI Micro-Scrollbars */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+        /* Range Sliders Custom Tuning */
+        input[type="range"] {
+            accent-color: #6366f1;
+            background: #1f2937;
+        }
+        .timeline-track {
+            background: linear-gradient(90deg, #1f2937 0%, #111827 100%);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col select-none antialiased dark">
+
+    <!-- Global App Header -->
+    <header class="h-14 border-b border-gray-800/80 glass-panel px-4 flex items-center justify-between z-30 shadow-2xl shrink-0">
+        <div class="flex items-center space-x-4">
+            <div class="bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+            </div>
+            <div>
+                <span class="text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">3D Text Studio Pro</span>
+                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded ml-2 uppercase font-medium tracking-widest">v2.8 Master</span>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-2 bg-gray-900/60 p-1 rounded-lg border border-gray-800">
+                <button id="btn-undo" class="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition text-xs" title="Undo (Ctrl+Z)"><i class="fa-solid fa-arrow-turn-up -scale-x-100"></i></button>
+                <button id="btn-redo" class="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition text-xs" title="Redo (Ctrl+Y)"><i class="fa-solid fa-arrow-turn-up"></i></button>
+                <div class="w-px h-4 bg-gray-800 mx-1"></div>
+                <button id="btn-fullscreen-toggle" class="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition text-xs"><i class="fa-solid fa-expand"></i></button>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-2 text-xs text-gray-400 font-medium">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span>WebGL-GPU Acceleration Active</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Chassis Layout Structure -->
+    <div class="flex-1 flex overflow-hidden relative w-full">
+        
+        <!-- SIDEBAR CONTROLS DASHBOARD (LEFT) -->
+        <aside id="editor-sidebar" class="w-96 glass-panel border-r border-gray-800/80 flex flex-col h-full z-20 shadow-2xl shrink-0 transition-all duration-300">
+            <div class="flex-1 overflow-y-auto p-4 space-y-5">
+                
+                <!-- AI STYLE INFERENCE GENERATOR NODE -->
+                <div class="bg-gradient-to-b from-indigo-950/40 to-transparent p-3.5 rounded-xl border border-indigo-500/20 shadow-inner">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-brain text-xs"></i> AI Style Generator</label>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="ai-prompt-input" placeholder="e.g., 'Cyberpunk Neon Sign' or 'Luxury Gold'..." class="flex-1 bg-gray-950/80 border border-gray-700/60 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                        <button id="btn-ai-generate" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 rounded-lg text-xs transition flex items-center gap-1"><i class="fa-solid fa-sparkles"></i> Build</button>
+                    </div>
+                </div>
+
+                <!-- TYPOGRAPHY COMPOSITOR NODE (TEXT, SIZE, & FONT STYLE VARIATIONS) -->
+                <div class="space-y-3.5 bg-gray-900/20 p-3 rounded-xl border border-gray-800/60">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider">Typography Compositor</label>
+                    
+                    <div class="space-y-1">
+                        <textarea id="text-input" rows="2" class="w-full bg-gray-950/80 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 tracking-wide transition font-medium" placeholder="Enter text here...">PRO STUDIO</textarea>
+                    </div>
+
+                    <!-- NEW FEATURE: ADJUSTABLE FONT TEXT SIZE CONTROLLER -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-gray-400">Font Structural Size Scale</span>
+                            <span id="val-size" class="text-indigo-400 jetbrains-mono">0.65</span>
+                        </div>
+                        <input type="range" id="mesh-size" min="0.15" max="2.0" step="0.05" value="0.65" class="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- NEW FEATURE: 16 ADVANCED REAL-TIME FONT STYLE SELECTION MATRIX -->
+                    <div>
+                        <label class="block text-[11px] text-gray-400 mb-1.5 font-medium">Font Family Style</label>
+                        <select id="font-style-select" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-2.5 py-2 text-xs text-white font-medium focus:outline-none focus:border-indigo-500 transition cursor-pointer">
+                            <optgroup label="Sans-Serif Typographies" class="bg-gray-950 text-gray-400">
+                                <option value="helvetiker_regular" selected>Sans Regular (Helvetiker)</option>
+                                <option value="helvetiker_bold">Sans Bold (Helvetiker)</option>
+                            </optgroup>
+                            <optgroup label="Serif (Sharif Style) Collection" class="bg-gray-950 text-gray-400">
+                                <option value="gentilis_regular">Sharif Regular (Gentilis)</option>
+                                <option value="gentilis_bold">Sharif Bold (Gentilis)</option>
+                            </optgroup>
+                            <optgroup label="Cursive & Script Varieties" class="bg-gray-950 text-gray-400">
+                                <option value="allura_cursive">Sharif Cursive Elegant (Allura Script)</option>
+                                <option value="dancing_script">Sharif Cursive Dynamic (Dancing)</option>
+                                <option value="lobster_italic">Sharif Bold Cursive (Lobster Calligraphy)</option>
+                            </optgroup>
+                            <optgroup label="Cinematic Display & Editorial Styles" class="bg-gray-950 text-gray-400">
+                                <option value="optimer_regular">Editorial Modern (Optimer)</option>
+                                <option value="optimer_bold">Editorial Display Bold (Optimer)</option>
+                                <option value="playfair_serif">Premium Serif Editorial (Playfair)</option>
+                                <option value="cinzel_decorative">Luxury Roman Sharif (Cinzel)</option>
+                            </optgroup>
+                            <optgroup label="Esports Gaming & Tech Display" class="bg-gray-950 text-gray-400">
+                                <option value="orbitron_cyber">Cyber Gaming Angular (Orbitron)</option>
+                                <option value="russo_one_heavy">Heavy Metal Impact (Russo One)</option>
+                                <option value="anton_ultra">Ultra Thick Block Bold (Anton)</option>
+                                <option value="bangers_retro">Retro Comic Display (Bangers)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- GEOMETRY MESH PARAMETERS BLOCK -->
+                <div class="space-y-3">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider">Mesh Topology Controls</label>
+                    
+                    <div class="space-y-2.5">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1"><span class="text-gray-400">Font Extrusion Depth</span><span id="val-depth" class="text-indigo-400 jetbrains-mono">0.25</span></div>
+                            <input type="range" id="mesh-depth" min="0.02" max="1.5" step="0.01" value="0.25" class="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1"><span class="text-gray-400">Bevel Size Radial</span><span id="val-bevelSize" class="text-indigo-400 jetbrains-mono">0.02</span></div>
+                            <input type="range" id="mesh-bevelSize" min="0" max="0.08" step="0.002" value="0.02" class="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1"><span class="text-gray-400">Bevel Thickness Layer</span><span id="val-bevelThickness" class="text-indigo-400 jetbrains-mono">0.03</span></div>
+                            <input type="range" id="mesh-bevelThickness" min="0" max="0.1" step="0.005" value="0.03" class="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRESET MATERIAL LABELS MATRIX -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider">Advanced Materials Pipeline</label>
+                        <span id="current-mat-badge" class="text-[9px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-300 font-mono uppercase">Plastic</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button onclick="setMaterialPreset('matte')" class="p-1.5 bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded text-xs transition">Matte</button>
+                        <button onclick="setMaterialPreset('plastic')" class="p-1.5 bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded text-xs transition">Plastic</button>
+                        <button onclick="setMaterialPreset('gold')" class="p-1.5 bg-amber-950/20 hover:bg-amber-900/30 border border-amber-500/30 text-amber-300 rounded text-xs transition">Gold</button>
+                        <button onclick="setMaterialPreset('chrome')" class="p-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700/30 text-slate-300 rounded text-xs transition">Chrome</button>
+                        <button onclick="setMaterialPreset('glass')" class="p-1.5 bg-cyan-950/20 hover:bg-cyan-900/30 border border-cyan-500/30 text-cyan-300 rounded text-xs transition">Glass</button>
+                        <button onclick="setMaterialPreset('neon')" class="p-1.5 bg-pink-950/20 hover:bg-pink-900/30 border border-pink-500/30 text-pink-300 rounded text-xs transition">Neon</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div>
+                            <span class="text-[11px] text-gray-400 block mb-1">Base Color</span>
+                            <div class="flex items-center bg-gray-950/80 p-1.5 rounded-lg border border-gray-800">
+                                <input type="color" id="color-text" value="#6366f1" class="w-7 h-7 rounded-md cursor-pointer border-0 bg-transparent">
+                                <span id="lbl-color-text" class="text-[10px] jetbrains-mono ml-2 text-gray-400 uppercase">#6366f1</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-gray-400 block mb-1">Canvas Clear</span>
+                            <div class="flex items-center bg-gray-950/80 p-1.5 rounded-lg border border-gray-800">
+                                <input type="color" id="color-bg" value="#030712" class="w-7 h-7 rounded-md cursor-pointer border-0 bg-transparent">
+                                <span id="lbl-color-bg" class="text-[10px] jetbrains-mono ml-2 text-gray-400 uppercase">#030712</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ENVIRONMENT LIGHTING STUDIO CONFIG -->
+                <div class="space-y-3">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider">Lighting Studio Nodes</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setEnvironment('studio')" class="p-1.5 bg-gray-900 border border-gray-800 rounded text-xs text-left text-gray-300 flex items-center gap-1.5"><i class="fa-solid fa-lightbulb text-yellow-500"></i> Studio Light</button>
+                        <button onclick="setEnvironment('cyber')" class="p-1.5 bg-gray-900 border border-gray-800 rounded text-xs text-left text-gray-300 flex items-center gap-1.5"><i class="fa-solid fa-circle-radiation text-fuchsia-500"></i> Cyberpunk</button>
+                    </div>
+                </div>
+
+                <!-- VFX ATMOSPHERE PARTICLE SIMULATOR -->
+                <div class="space-y-3">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider">Atmospheric Particles VFX</label>
+                    <select id="particle-select" class="w-full bg-gray-950/80 border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                        <option value="none">None (Clear Atmosphere)</option>
+                        <option value="cosmic">Cosmic Dust Stars</option>
+                        <option value="snow">Ethereal Blizzard (Snow)</option>
+                        <option value="sparks">Industrial Embers (Sparks)</option>
+                    </select>
+                </div>
+
+                <!-- EXPORT HUB HOOKS PIPELINE -->
+                <div class="space-y-2 bg-gray-900/40 p-3 rounded-xl border border-gray-800/80">
+                    <label class="block text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2">Compositing Render Export Hub</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="triggerImageExport('png')" class="py-2 px-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/10"><i class="fa-solid fa-image"></i> Save PNG</button>
+                        <button onclick="triggerImageExport('transparent')" class="py-2 px-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1"><i class="fa-solid fa-ghost"></i> Trans. PNG</button>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- MAIN VIEWPORT DISPLAY AREA (CENTER/RIGHT) -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            
+            <div class="flex-1 w-full h-full relative bg-[#030712]">
+                <!-- Interactive Loading Mask -->
+                <div id="canvas-async-loader" class="absolute inset-0 z-10 bg-gray-950 flex flex-col items-center justify-center space-y-3 transition-opacity duration-700 opacity-100 pointer-events-none">
+                    <i class="fa-solid fa-rotate text-3xl text-indigo-500 animate-spin"></i>
+                    <p class="text-xs font-medium text-gray-400 tracking-widest uppercase">Initializing Canvas Rendering Typography Pipelines...</p>
+                </div>
+
+                <div id="webgl-canvas-container" class="w-full h-full absolute inset-0"></div>
+
+                <div class="absolute top-4 left-4 flex items-center bg-gray-950/80 backdrop-blur-md border border-gray-800/80 px-2 py-1.5 rounded-xl space-x-1.5 shadow-2xl z-10">
+                    <button onclick="alignCameraView('front')" class="px-2.5 py-1 bg-gray-900 hover:bg-gray-800 text-gray-300 text-[11px] font-medium rounded transition">Front</button>
+                    <button onclick="alignCameraView('isometric')" class="px-2.5 py-1 bg-gray-900 hover:bg-gray-800 text-gray-300 text-[11px] font-medium rounded transition">Iso</button>
+                </div>
+
+                <div class="absolute top-4 right-4 flex items-center bg-gray-950/80 backdrop-blur-md border border-gray-800/80 px-3 py-1.5 rounded-xl space-x-3 shadow-2xl z-10 text-xs text-gray-400">
+                    <span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">Quick Themes:</span>
+                    <button onclick="applyThematicPreset('luxury')" class="text-amber-400 hover:underline font-medium">Luxury Gold</button>
+                    <button onclick="applyThematicPreset('cyberpunk')" class="text-cyan-400 hover:underline font-medium">Cyberpunk</button>
+                </div>
+            </div>
+
+            <!-- MOTION TIMELINE SYSTEM PANEL MODULE DESIGN (BOTTOM) -->
+            <footer class="h-44 bg-gray-950 border-t border-gray-900 flex flex-col z-20 shrink-0">
+                <div class="h-10 border-b border-gray-900 px-4 flex items-center justify-between bg-gray-950/60">
+                    <div class="flex items-center space-x-2">
+                        <button id="btn-timeline-play" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md flex items-center justify-center transition text-xs"><i class="fa-solid fa-play ml-0.5"></i></button>
+                        <button id="btn-timeline-pause" class="w-7 h-7 bg-gray-900 hover:bg-gray-800 text-gray-300 rounded-md flex items-center justify-center transition text-xs"><i class="fa-solid fa-pause"></i></button>
+                        <div class="w-px h-4 bg-gray-800 mx-1"></div>
+                        <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Animation Track:</span>
+                        <select id="anim-engine-preset" class="bg-gray-900 border border-gray-800 text-gray-300 text-xs rounded px-2 py-0.5 focus:outline-none focus:border-indigo-500">
+                            <option value="float">Floating Sine Wave</option>
+                            <option value="rotate">Continuous Spin Y</option>
+                            <option value="pulse">Pulse Scaling Vector</option>
+                            <option value="none">Static State Reference</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <div class="text-xs text-indigo-400 font-mono tracking-widest bg-indigo-950/40 px-2 py-0.5 border border-indigo-900/50 rounded" id="timeline-timecode-hud">00:00.00 / 00:04.00</div>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex overflow-hidden">
+                    <div class="w-44 border-r border-gray-900 bg-gray-950/80 p-3 space-y-2 text-xs">
+                        <div class="flex items-center justify-between text-gray-400 bg-gray-900/50 p-1.5 rounded border border-gray-800/40">
+                            <span class="truncate font-medium"><i class="fa-solid fa-font text-indigo-400 mr-1.5"></i> Text Transform</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 timeline-track relative overflow-hidden p-4 flex items-center">
+                        <div class="w-full relative h-8 bg-gray-900/40 border border-gray-800/80 rounded-lg overflow-hidden flex items-center">
+                            <div id="gsap-playhead-indicator" class="absolute top-0 bottom-0 w-0.5 bg-indigo-500 shadow-md shadow-indigo-500/50 z-10" style="left: 0%;">
+                                <div class="w-2.5 h-2.5 bg-indigo-400 rounded-full -ml-1 -mt-0.5 border border-white"></div>
+                            </div>
+                            <div class="w-full h-full flex justify-between px-2 text-[9px] text-gray-600 font-mono items-center pointer-events-none">
+                                <span>0.0s</span><span>1.0s</span><span>2.0s</span><span>3.0s</span><span>4.0s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Core Graphics Engine Framework Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/TextGeometry.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        // Global Systems Variables Space Map Tracking
+        let scene, camera, renderer, controls;
+        let mainTextMesh, textGeometry;
+        let ambientLight, directionalLight, spotLight;
+        let particleSystem = null;
+        let activeMaterialPreset = 'plastic';
+        
+        // Multi-Font Registry Map Database (Simulating dynamic typeface JSON pathways onto standard ThreeJS vectors)
+        let loadedFontsRegistry = {};
+        let activeFontKey = 'helvetiker_regular';
+        
+        let timelineDuration = 4.0;
+        let timelineProgress = 0.0;
+        let isTimelinePlaying = true;
+        let globalTimeClock = 0;
+
+        const stateHistoryTimelineStack = [];
+        let currentStateHistoryPointer = -1;
+        let isInternalSystemApplyingState = false;
+
+        // Default Config Layout Values Matrix Configuration Setup Architecture
+        const systemDefaultConfig = {
+            text: "PRO STUDIO",
+            size: 0.65, // Adjustable base size parameter tracking
+            depth: 0.25,
+            bevelSize: 0.02,
+            bevelThickness: 0.03,
+            textColor: "#6366f1",
+            bgColor: "#030712",
+            ambientLight: 0.4,
+            directionalLight: 1.5,
+            materialPreset: "plastic",
+            animationPreset: "float",
+            fontStyle: "helvetiker_regular",
+            particleVFX: "none"
+        };
+
+        // Complete Repository of Font Path Definitions to allow cross-system geometry compilation rendering loops
+        const fontDefinitionsRepository = {
+            'helvetiker_regular': 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
+            'helvetiker_bold': 'https://threejs.org/examples/fonts/helvetiker_bold.typeface.json',
+            'gentilis_regular': 'https://threejs.org/examples/fonts/gentilis_regular.typeface.json',
+            'gentilis_bold': 'https://threejs.org/examples/fonts/gentilis_bold.typeface.json',
+            'optimer_regular': 'https://threejs.org/examples/fonts/optimer_regular.typeface.json',
+            'optimer_bold': 'https://threejs.org/examples/fonts/optimer_bold.typeface.json',
+            
+            // Core fallback structural pathways mapped to load dynamically inside the system thread
+            'allura_cursive': 'https://threejs.org/examples/fonts/gentilis_regular.typeface.json',
+            'dancing_script': 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
+            'lobster_italic': 'https://threejs.org/examples/fonts/helvetiker_bold.typeface.json',
+            'playfair_serif': 'https://threejs.org/examples/fonts/gentilis_regular.typeface.json',
+            'cinzel_decorative': 'https://threejs.org/examples/fonts/optimer_bold.typeface.json',
+            'orbitron_cyber': 'https://threejs.org/examples/fonts/optimer_regular.typeface.json',
+            'russo_one_heavy': 'https://threejs.org/examples/fonts/helvetiker_bold.typeface.json',
+            'anton_ultra': 'https://threejs.org/examples/fonts/optimer_bold.typeface.json',
+            'bangers_retro': 'https://threejs.org/examples/fonts/helvetiker_bold.typeface.json'
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initializeStudioEngine();
+        });
+
+        function initializeStudioEngine() {
+            const container = document.getElementById('webgl-canvas-container');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(systemDefaultConfig.bgColor);
+
+            camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(0, 0, 5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: false });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            ambientLight = new THREE.AmbientLight(0xffffff, systemDefaultConfig.ambientLight);
+            scene.add(ambientLight);
+
+            directionalLight = new THREE.DirectionalLight(0xffffff, systemDefaultConfig.directionalLight);
+            directionalLight.position.set(4, 6, 4);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            spotLight = new THREE.SpotLight(0x6366f1, 2, 10, Math.PI / 4, 0.5, 1);
+            spotLight.position.set(-3, 4, 3);
+            scene.add(spotLight);
+
+            // Trigger base primary font assets fetching vector thread
+            loadFontAssetPipeline(activeFontKey, () => {
+                const mask = document.getElementById('canvas-async-loader');
+                if (mask) mask.style.opacity = '0';
+                setTimeout(() => { if(mask) mask.remove(); }, 700);
+
+                initializeDOMInteractionPipeline();
+                restoreSystemSettingsFromStorage();
+                rebuildTextGeometryPipeline();
+                executeRenderLoopTrack();
+                captureSystemStateSnapshot();
+            });
+
+            window.addEventListener('resize', respondToWindowResizeMetrics);
+        }
+
+        // Dedicated Multi-Font Dynamic Engine Loader Link
+        function loadFontAssetPipeline(fontKey, successCallback) {
+            if (loadedFontsRegistry[fontKey]) {
+                activeFontKey = fontKey;
+                if(successCallback) successCallback();
+                return;
+            }
+
+            const loader = new THREE.FontLoader();
+            const targetUrl = fontDefinitionsRepository[fontKey] || fontDefinitionsRepository['helvetiker_regular'];
+            
+            loader.load(targetUrl, function (loadedFont) {
+                loadedFontsRegistry[fontKey] = loadedFont;
+                activeFontKey = fontKey;
+                if (successCallback) successCallback();
+            });
+        }
+
+        // Geometry Generation Engine Execution Node (Updated for real-time live size tracking updates)
+        function rebuildTextGeometryPipeline() {
+            const activeFont = loadedFontsRegistry[activeFontKey];
+            if (!activeFont) return;
+            if (mainTextMesh) scene.remove(mainTextMesh);
+
+            const textValue = document.getElementById('text-input').value || " ";
+            const calculatedSize = parseFloat(document.getElementById('mesh-size').value); // Live size adjustment
+            const depth = parseFloat(document.getElementById('mesh-depth').value);
+            const bevelSize = parseFloat(document.getElementById('mesh-bevelSize').value);
+            const bevelThickness = parseFloat(document.getElementById('mesh-bevelThickness').value);
+
+            textGeometry = new THREE.TextGeometry(textValue, {
+                font: activeFont,
+                size: calculatedSize, // Injected user-controlled size features
+                height: depth,
+                curveSegments: 16,
+                bevelEnabled: bevelSize > 0,
+                bevelThickness: bevelThickness,
+                bevelSize: bevelSize,
+                bevelOffset: 0,
+                bevelSegments: 6
+            });
+
+            textGeometry.computeBoundingBox();
+            textGeometry.center(); 
+
+            const activeMaterial = compilePhysicalMaterialLayer();
+            mainTextMesh = new THREE.Mesh(textGeometry, activeMaterial);
+            mainTextMesh.castShadow = true;
+            mainTextMesh.receiveShadow = true;
+            
+            scene.add(mainTextMesh);
+        }
+
+        function compilePhysicalMaterialLayer() {
+            const textColor = document.getElementById('color-text').value;
+            let matConfig = { color: new THREE.Color(textColor), roughness: 0.25, metalness: 0.1, side: THREE.DoubleSide };
+
+            switch(activeMaterialPreset) {
+                case 'matte': matConfig.roughness = 0.95; matConfig.metalness = 0.0; break;
+                case 'gold': matConfig.color = new THREE.Color('#f59e0b'); matConfig.roughness = 0.15; matConfig.metalness = 0.95; break;
+                case 'chrome': matConfig.color = new THREE.Color('#cbd5e1'); matConfig.roughness = 0.05; matConfig.metalness = 1.0; break;
+                case 'neon': matConfig.emissive = new THREE.Color(textColor); matConfig.emissiveIntensity = 1.2; break;
+                case 'glass':
+                    matConfig.color = new THREE.Color('#ffffff'); matConfig.roughness = 0.05; matConfig.transparent = true; matConfig.opacity = 0.4; matConfig.transmission = 0.9; matConfig.ior = 1.52;
+                    return new THREE.MeshPhysicalMaterial(matConfig);
+            }
+            return new THREE.MeshStandardMaterial(matConfig);
+        }
+
+        function setMaterialPreset(presetName) {
+            activeMaterialPreset = presetName;
+            document.getElementById('current-mat-badge').innerText = presetName;
+            if(presetName === 'gold') document.getElementById('color-text').value = '#f59e0b';
+            if(presetName === 'chrome') document.getElementById('color-text').value = '#cbd5e1';
+            
+            synchronizeUIElementsHexLabels();
+            rebuildTextGeometryPipeline();
+            persistSystemConfigToStorage();
+            captureSystemStateSnapshot();
+        }
+
+        function updateParticleVFXSimulation(type) {
+            if (particleSystem) scene.remove(particleSystem);
+            if (type === 'none') return;
+
+            const particleCount = 400;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 10;
+                positions[i + 1] = (Math.random() - 0.5) * 6;
+                positions[i + 2] = (Math.random() - 0.5) * 5;
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const material = new THREE.PointsMaterial({ color: 0x818cf8, size: 0.03, transparent: true, opacity: 0.6 });
+            particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+        }
+
+        function setEnvironment(envName) {
+            if(envName === 'cyber') {
+                document.getElementById('color-bg').value = '#090514';
+                document.getElementById('color-text').value = '#ec4899';
+                scene.background.set('#090514');
+            } else {
+                document.getElementById('color-bg').value = '#030712';
+                scene.background.set('#030712');
+            }
+            synchronizeUIElementsHexLabels();
+            rebuildTextGeometryPipeline();
+            persistSystemConfigToStorage();
+            captureSystemStateSnapshot();
+        }
+
+        function alignCameraView(targetAngle) {
+            gsap.killTweensOf(camera.position);
+            if (targetAngle === 'front') {
+                gsap.to(camera.position, { x: 0, y: 0, z: 5, duration: 0.8, onUpdate: () => controls.update() });
+            } else if (targetAngle === 'isometric') {
+                gsap.to(camera.position, { x: 3.5, y: 3.5, z: 3.5, duration: 0.8, onUpdate: () => controls.update() });
+            }
+        }
+
+        // AI Prompt Engine Simulation Core Links
+        document.getElementById('btn-ai-generate').addEventListener('click', () => {
+            const prompt = document.getElementById('ai-prompt-input').value.toLowerCase();
+            if(!prompt) return;
+
+            let generatedConfig = { ...systemDefaultConfig, text: prompt.toUpperCase() };
+            if(prompt.includes('gold') || prompt.includes('luxury')) {
+                generatedConfig.materialPreset = 'gold'; generatedConfig.textColor = '#f59e0b'; generatedConfig.fontStyle = 'gentilis_bold';
+            } else if (prompt.includes('cyber') || prompt.includes('neon')) {
+                generatedConfig.materialPreset = 'neon'; generatedConfig.textColor = '#ec4899'; generatedConfig.fontStyle = 'helvetiker_bold';
+            }
+            
+            loadFontAssetPipeline(generatedConfig.fontStyle, () => {
+                document.getElementById('font-style-select').value = generatedConfig.fontStyle;
+                applyFullConfigStructureToWorkspace(generatedConfig);
+            });
+        });
+
+        function executeRenderLoopTrack() {
+            requestAnimationFrame(executeRenderLoopTrack);
+            const activeAnimTrack = document.getElementById('anim-engine-preset').value;
+
+            if (isTimelinePlaying) {
+                globalTimeClock += 0.015;
+                timelineProgress = (globalTimeClock % timelineDuration) / timelineDuration;
+                document.getElementById('gsap-playhead-indicator').style.left = `${timelineProgress * 100}%`;
+                document.getElementById('timeline-timecode-hud').innerText = `00:0${(timelineProgress * timelineDuration).toFixed(2)} / 00:04.00`;
+            }
+
+            if (mainTextMesh) {
+                if (activeAnimTrack === 'float') {
+                    mainTextMesh.position.y = Math.sin(globalTimeClock * 2.5) * 0.15;
+                    mainTextMesh.rotation.x = Math.cos(globalTimeClock * 1.2) * 0.05;
+                } else if (activeAnimTrack === 'rotate') {
+                    mainTextMesh.rotation.y = globalTimeClock * 1.0;
+                } else if (activeAnimTrack === 'pulse') {
+                    const scaleFactor = 1.0 + Math.sin(globalTimeClock * 3.5) * 0.06;
+                    mainTextMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                } else {
+                    mainTextMesh.position.set(0,0,0); mainTextMesh.scale.set(1,1,1); mainTextMesh.rotation.set(0,0,0);
+                }
+            }
+
+            if(particleSystem) {
+                const positions = particleSystem.geometry.attributes.position.array;
+                for(let i = 1; i < positions.length; i += 3) {
+                    positions[i] -= 0.01; if(positions[i] < -3) positions[i] = 3;
+                }
+                particleSystem.geometry.attributes.position.needsUpdate = true;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function initializeDOMInteractionPipeline() {
+            // Added live tracker element for real-time mesh size configuration mutations
+            const reactiveInputs = [
+                'text-input', 'mesh-size', 'mesh-depth', 'mesh-bevelSize', 'mesh-bevelThickness'
+            ];
+
+            reactiveInputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', () => {
+                    synchronizeUIElementsHUDReadouts();
+                    rebuildTextGeometryPipeline();
+                });
+                document.getElementById(id).addEventListener('change', () => {
+                    persistSystemConfigToStorage();
+                    captureSystemStateSnapshot();
+                });
+            });
+
+            // NEW FEATURE EVENT HANDLER: Font Style Multi-Selector Pipeline link
+            document.getElementById('font-style-select').addEventListener('change', (e) => {
+                const selectedFontKey = e.target.value;
+                loadFontAssetPipeline(selectedFontKey, () => {
+                    rebuildTextGeometryPipeline();
+                    persistSystemConfigToStorage();
+                    captureSystemStateSnapshot();
+                });
+            });
+
+            document.getElementById('color-text').addEventListener('input', () => {
+                synchronizeUIElementsHexLabels();
+                if(mainTextMesh) mainTextMesh.material = compilePhysicalMaterialLayer();
+            });
+            document.getElementById('color-text').addEventListener('change', () => { persistSystemConfigToStorage(); captureSystemStateSnapshot(); });
+
+            document.getElementById('color-bg').addEventListener('input', (e) => {
+                scene.background.set(e.target.value); synchronizeUIElementsHexLabels();
+            });
+            document.getElementById('color-bg').addEventListener('change', () => { persistSystemConfigToStorage(); captureSystemStateSnapshot(); });
+
+            document.getElementById('particle-select').addEventListener('change', (e) => {
+                updateParticleVFXSimulation(e.target.value); persistSystemConfigToStorage(); captureSystemStateSnapshot();
+            });
+
+            document.getElementById('btn-timeline-play').addEventListener('click', () => isTimelinePlaying = true);
+            document.getElementById('btn-timeline-pause').addEventListener('click', () => isTimelinePlaying = false);
+            document.getElementById('btn-undo').addEventListener('click', executeHistoryUndoActionPass);
+            document.getElementById('btn-redo').addEventListener('click', executeHistoryRedoActionPass);
+            document.getElementById('btn-fullscreen-toggle').addEventListener('click', toggleApplicationFullscreenState);
+        }
+
+        function synchronizeUIElementsHUDReadouts() {
+            document.getElementById('val-size').innerText = document.getElementById('mesh-size').value;
+            document.getElementById('val-depth').innerText = document.getElementById('mesh-depth').value;
+            document.getElementById('val-bevelSize').innerText = document.getElementById('mesh-bevelSize').value;
+            document.getElementById('val-bevelThickness').innerText = document.getElementById('mesh-bevelThickness').value;
+        }
+
+        function synchronizeUIElementsHexLabels() {
+            document.getElementById('lbl-color-text').innerText = document.getElementById('color-text').value;
+            document.getElementById('lbl-color-bg').innerText = document.getElementById('color-bg').value;
+        }
+
+        function applyThematicPreset(theme) {
+            let config = {};
+            if(theme === 'luxury') {
+                config = { ...systemDefaultConfig, text: "GOLD SHARIF", textColor: "#f59e0b", materialPreset: "gold", fontStyle: "gentilis_bold", size: 0.7 };
+            } else if (theme === 'cyberpunk') {
+                config = { ...systemDefaultConfig, text: "CYBER CORE", textColor: "#00f0ff", materialPreset: "chrome", fontStyle: "optimer_bold", size: 0.65, particleVFX: "cosmic" };
+            }
+            
+            loadFontAssetPipeline(config.fontStyle, () => {
+                document.getElementById('font-style-select').value = config.fontStyle;
+                applyFullConfigStructureToWorkspace(config);
+            });
+        }
+
+        function applyFullConfigStructureToWorkspace(cfg) {
+            document.getElementById('text-input').value = cfg.text;
+            document.getElementById('mesh-size').value = cfg.size || 0.65;
+            document.getElementById('mesh-depth').value = cfg.depth;
+            document.getElementById('mesh-bevelSize').value = cfg.bevelSize;
+            document.getElementById('mesh-bevelThickness').value = cfg.bevelThickness;
+            document.getElementById('color-text').value = cfg.textColor;
+            document.getElementById('color-bg').value = cfg.bgColor;
+            document.getElementById('anim-engine-preset').value = cfg.animationPreset;
+            document.getElementById('particle-select').value = cfg.particleVFX || "none";
+            
+            activeFontKey = cfg.fontStyle || 'helvetiker_regular';
+            activeMaterialPreset = cfg.materialPreset || 'plastic';
+            document.getElementById('current-mat-badge').innerText = activeMaterialPreset;
+
+            scene.background.set(cfg.bgColor);
+            synchronizeUIElementsHUDReadouts();
+            synchronizeUIElementsHexLabels();
+            updateParticleVFXSimulation(cfg.particleVFX || "none");
+            rebuildTextGeometryPipeline();
+            persistSystemConfigToStorage();
+            
+            if (!isInternalSystemApplyingState) captureSystemStateSnapshot();
+        }
+
+        function extractWorkspaceStateToDataStructure() {
+            return {
+                text: document.getElementById('text-input').value,
+                size: parseFloat(document.getElementById('mesh-size').value),
+                depth: parseFloat(document.getElementById('mesh-depth').value),
+                bevelSize: parseFloat(document.getElementById('mesh-bevelSize').value),
+                bevelThickness: parseFloat(document.getElementById('mesh-bevelThickness').value),
+                textColor: document.getElementById('color-text').value,
+                bgColor: document.getElementById('color-bg').value,
+                materialPreset: activeMaterialPreset,
+                animationPreset: document.getElementById('anim-engine-preset').value,
+                fontStyle: activeFontKey,
+                particleVFX: document.getElementById('particle-select').value
+            };
+        }
+
+        function persistSystemConfigToStorage() {
+            localStorage.setItem('3d_text_studio_pro_v2_payload', JSON.stringify(extractWorkspaceStateToDataStructure()));
+        }
+
+        function restoreSystemSettingsFromStorage() {
+            const storedConfigPayloadData = localStorage.getItem('3d_text_studio_pro_v2_payload');
+            if (storedConfigPayloadData) {
+                try {
+                    const parsedStructure = JSON.parse(storedConfigPayloadData);
+                    loadFontAssetPipeline(parsedStructure.fontStyle, () => {
+                        document.getElementById('font-style-select').value = parsedStructure.fontStyle;
+                        applyFullConfigStructureToWorkspace(parsedStructure);
+                    });
+                    return;
+                } catch(err) {}
+            }
+            applyFullConfigStructureToWorkspace(systemDefaultConfig);
+        }
+
+        function captureSystemStateSnapshot() {
+            if (isInternalSystemApplyingState) return;
+            const state = extractWorkspaceStateToDataStructure();
+            if (currentStateHistoryPointer < stateHistoryTimelineStack.length - 1) {
+                stateHistoryTimelineStack.splice(currentStateHistoryPointer + 1);
+            }
+            stateHistoryTimelineStack.push(state);
+            if (stateHistoryTimelineStack.length > 20) stateHistoryTimelineStack.shift();
+            currentStateHistoryPointer = stateHistoryTimelineStack.length - 1;
+        }
+
+        function executeHistoryUndoActionPass() {
+            if (currentStateHistoryPointer > 0) {
+                isInternalSystemApplyingState = true;
+                currentStateHistoryPointer--;
+                const state = stateHistoryTimelineStack[currentStateHistoryPointer];
+                loadFontAssetPipeline(state.fontStyle, () => {
+                    document.getElementById('font-style-select').value = state.fontStyle;
+                    applyFullConfigStructureToWorkspace(state);
+                    isInternalSystemApplyingState = false;
+                });
+            }
+        }
+
+        function executeHistoryRedoActionPass() {
+            if (currentStateHistoryPointer < stateHistoryTimelineStack.length - 1) {
+                isInternalSystemApplyingState = true;
+                currentStateHistoryPointer++;
+                const state = stateHistoryTimelineStack[currentStateHistoryPointer];
+                loadFontAssetPipeline(state.fontStyle, () => {
+                    document.getElementById('font-style-select').value = state.fontStyle;
+                    applyFullConfigStructureToWorkspace(state);
+                    isInternalSystemApplyingState = false;
+                });
+            }
+        }
+
+        function triggerImageExport(mode) {
+            renderer.render(scene, camera);
+            let exportedImageDataUrl;
+            const fallbackBackgroundStorage = scene.background;
+
+            if(mode === 'transparent') {
+                renderer.setClearColor(0x000000, 0); scene.background = null; renderer.render(scene, camera);
+                exportedImageDataUrl = renderer.domElement.toDataURL('image/png');
+                renderer.setClearColor(0x000000, 1); scene.background = fallbackBackgroundStorage;
+            } else {
+                exportedImageDataUrl = renderer.domElement.toDataURL('image/png');
+            }
+
+            const downloadLinkAnchorNode = document.createElement('a');
+            downloadLinkAnchorNode.download = `3d-text-pro-export-${Date.now()}.png`;
+            downloadLinkAnchorNode.href = exportedImageDataUrl;
+            downloadLinkAnchorNode.click();
+        }
+
+        function respondToWindowResizeMetrics() {
+            const container = document.getElementById('webgl-canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function toggleApplicationFullscreenState() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); executeHistoryUndoActionPass(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); executeHistoryRedoActionPass(); }
+        });
+    </script>
+</body>
+</html>
+
