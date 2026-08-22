@@ -3,111 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Text Studio Pro – Advanced Motion Editor</title>
-    <!-- Tailwind CSS Engine -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Google Fonts Framework for UI Typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <!-- FontAwesome Vector Graphics -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <title>AI 3D Studio - Neural4D</title>
+    <!-- Google 3D model-viewer component -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
     <style>
-        body {
-            background-color: #030712;
-            color: #f9fafb;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow: hidden;
-        }
-        .jetbrains-mono { font-family: 'JetBrains Mono', monospace; }
-        /* Ultra-Smooth Premium Glassmorphism */
-        .glass-panel {
-            background: rgba(17, 24, 39, 0.45);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        /* Custom UI Micro-Scrollbars */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 99px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
-        /* Range Sliders Custom Tuning */
-        input[type="range"] {
-            accent-color: #6366f1;
-            background: #1f2937;
-        }
-        .timeline-track {
-            background: linear-gradient(90deg, #1f2937 0%, #111827 100%);
-        }
+        :root { --primary: #4f46e5; --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --border: #334155; }
+        body { background: var(--bg); color: var(--text); padding: 16px; font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 8px; overflow-x: auto; }
+        .tab-btn { background: transparent; color: #94a3b8; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 24px; border: 1px solid var(--border); margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: white; box-sizing: border-box; }
+        .key-input { border-color: #ff9800; background: #2a1f10; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: white; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-main:disabled { background: #475569; cursor: not-allowed; }
+        .viewer-box { position: relative; height: 400px; background: radial-gradient(circle, #334155 0%, #0f172a 100%); border-radius: 12px; overflow: hidden; margin-top: 20px; border: 1px solid var(--border); }
+        model-viewer { width: 100%; height: 100%; }
+        .action-btns { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 10; }
+        .action-btn { background: rgba(0,0,0,0.7); border: 1px solid var(--border); color: white; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+        .gallery-item { background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 12px; cursor: pointer; }
+        .gallery-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .gallery-tag { font-size: 11px; color: #94a3b8; }
+        #loader { display: none; text-align: center; padding: 20px; color: #60a5fa; font-weight: bold; }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col select-none antialiased dark">
-
-    <!-- Global App Header -->
-    <header class="h-14 border-b border-gray-800/80 glass-panel px-4 flex items-center justify-between z-30 shadow-2xl shrink-0">
-        <div class="flex items-center space-x-4">
-            <div class="bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
-                <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
-            </div>
-            <div>
-                <span class="text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">3D Text Studio Pro</span>
-                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded ml-2 uppercase font-medium tracking-widest">v2.8 Master</span>
-            </div>
-        </div>
-
-        <div class="flex items-center space-x-6">
-            <div class="flex items-center space-x-2 bg-gray-900/60 p-1 rounded-lg border border-gray-800">
-                <button id="btn-undo" class="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition text-xs" title="Undo (Ctrl+Z)"><i class="fa-solid fa-arrow-turn-up -scale-x-100"></i></button>
-                <button id="btn-redo" class="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition text-xs" title="Redo (Ctrl+Y)"><i class="fa-solid fa-arrow-turn-up"></i></button>
-                <div class="w-px h-4 bg-gray-800 mx-1"></div>
-                <button id="btn-fullscreen-toggle" class="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition text-xs"><i class="fa-solid fa-expand"></i></button>
-            </div>
-
-            <div class="hidden md:flex items-center space-x-2 text-xs text-gray-400 font-medium">
-                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                <span>WebGL-GPU Acceleration Active</span>
-            </div>
-        </div>
+<body>
+    <header style="margin-bottom: 20px;">
+        <h2>✨ AI 3D Studio (Neural4D)</h2>
     </header>
 
-    <!-- Main Workspace Chassis Layout Structure -->
-    <div class="flex-1 flex overflow-hidden relative w-full">
-        
-        <!-- SIDEBAR CONTROLS DASHBOARD (LEFT) -->
-        <aside id="editor-sidebar" class="w-96 glass-panel border-r border-gray-800/80 flex flex-col h-full z-20 shadow-2xl shrink-0 transition-all duration-300">
-            <div class="flex-1 overflow-y-auto p-4 space-y-5">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('generator')">⚡ Generator</button>
+        <button class="tab-btn" onclick="switchTab('history')">🕒 History (<span id="history-count">0</span>)</button>
+        <button class="tab-btn" onclick="switchTab('wishlist')">❤️ Wishlist (<span id="wishlist-count">0</span>)</button>
+    </div>
+
+    <!-- GENERATOR TAB -->
+    <section id="tab-generator" class="tab-content card">
+        <div class="form-group">
+            <label>Neural4D API Key</label>
+            <input type="password" id="api-key" class="key-input" placeholder="Paste your Neural4D API key here...">
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Resolution</label>
+                <select id="resolution">
+                    <option value="detailed">High Resolution</option>
+                    <option value="standard">Standard Low Poly</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Color Theme</label>
+                <select id="color">
+                    <option value="">Default AI Choice</option>
+                    <option value="Neon Cyberpunk">Cyberpunk Neon</option>
+                    <option value="Dark Monochrome">Dark Monochrome</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Prompt</label>
+            <input type="text" id="prompt" placeholder="e.g., A futuristic space astronaut" required>
+        </div>
+
+        <button class="btn-main" id="generate-btn" onclick="generateRealModel()">Generate 3D Model</button>
+
+        <div id="loader">
+            <div id="status-text">Connecting to Neural4D...</div>
+            <div style="font-size: 12px; color: #94a3b8; margin-top:5px;">Generating takes about 90 seconds.</div>
+        </div>
+
+        <div class="viewer-box" id="viewer-wrapper" style="display: none;">
+            <div class="action-btns">
+                <button class="action-btn" onclick="downloadCurrentModel()">⬇️ Download .GLB</button>
+                <button class="action-btn" onclick="toggleWishlist()">❤️ Wishlist</button>
+            </div>
+            <model-viewer id="main-viewer" auto-rotate camera-controls></model-viewer>
+        </div>
+    </section>
+
+    <!-- HISTORY TAB -->
+    <section id="tab-history" class="tab-content card" style="display: none;">
+        <h3>Generation History</h3>
+        <div class="gallery-grid" id="history-grid"></div>
+    </section>
+
+    <!-- WISHLIST TAB -->
+    <section id="tab-wishlist" class="tab-content card" style="display: none;">
+        <h3>Your Saved Wishlist</h3>
+        <div class="gallery-grid" id="wishlist-grid"></div>
+    </section>
+
+    <script>
+        let currentActiveModel = null;
+        let historyList = JSON.parse(localStorage.getItem('ai_3d_history') || '[]');
+        let wishlistList = JSON.parse(localStorage.getItem('ai_3d_wishlist') || '[]');
+
+        function updateCounters() {
+            document.getElementById('history-count').innerText = historyList.length;
+            document.getElementById('wishlist-count').innerText = wishlistList.length;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            event.target.classList.add('active');
+            if (tabName === 'history') renderGrid('history-grid', historyList);
+            if (tabName === 'wishlist') renderGrid('wishlist-grid', wishlistList);
+        }
+
+        function renderGrid(containerId, list) {
+            const grid = document.getElementById(containerId);
+            grid.innerHTML = list.length === 0 ? '<p style="color:#94a3b8">No models found.</p>' : '';
+            list.forEach(item => {
+                grid.innerHTML += `
+                    <div class="gallery-item" onclick="loadToViewer('${item.name.replace(/'/g, "\\'")}', '${item.url}')">
+                        <div class="gallery-title">${item.name}</div>
+                        <div class="gallery-tag">${item.tag}</div>
+                    </div>`;
+            });
+        }
+
+        function loadToViewer(name, url) {
+            currentActiveModel = { name, url };
+            document.getElementById('main-viewer').src = url;
+            switchTab('generator');
+            document.getElementById('viewer-wrapper').style.display = 'block';
+        }
+
+        const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+        async function generateRealModel() {
+            const apiKey = document.getElementById('api-key').value.trim();
+            let prompt = document.getElementById('prompt').value.trim();
+            const res = document.getElementById('resolution').value;
+            const color = document.getElementById('color').value;
+
+            if (!apiKey) return alert('Please paste your Neural4D API key first!');
+            if (!prompt) return alert('Enter a prompt!');
+            if (color) prompt += `, in ${color} colors`;
+
+            const btn = document.getElementById('generate-btn');
+            const loader = document.getElementById('loader');
+            const statusText = document.getElementById('status-text');
+            const viewerWrapper = document.getElementById('viewer-wrapper');
+
+            btn.disabled = true;
+            loader.style.display = 'block';
+            viewerWrapper.style.display = 'none';
+
+            try {
+                // STEP 1: Connect to Neural4D API to start generation
+                const createUrl = "https://alb.neural4d.com:3000/api/generateModelWithText";
+
+                statusText.innerText = "Submitting prompt to Neural4D...";
                 
-                <!-- AI STYLE INFERENCE GENERATOR NODE -->
-                <div class="bg-gradient-to-b from-indigo-950/40 to-transparent p-3.5 rounded-xl border border-indigo-500/20 shadow-inner">
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-brain text-xs"></i> AI Style Generator</label>
-                    </div>
-                    <div class="flex gap-1.5">
-                        <input type="text" id="ai-prompt-input" placeholder="e.g., 'Cyberpunk Neon Sign' or 'Luxury Gold'..." class="flex-1 bg-gray-950/80 border border-gray-700/60 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
-                        <button id="btn-ai-generate" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 rounded-lg text-xs transition flex items-center gap-1"><i class="fa-solid fa-sparkles"></i> Build</button>
-                    </div>
-                </div>
+                const createRes = await fetch(createUrl, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "Authorization": `Bearer ${apiKey}` 
+                    },
+                    body: JSON.stringify({ 
+                        prompt: prompt, 
+                        modelCount: 1, 
+                        disablePbr: 0 // 0 means it will generate textures/colors
+                    })
+                });
 
-                <!-- TYPOGRAPHY COMPOSITOR NODE (TEXT, SIZE, & FONT STYLE VARIATIONS) -->
-                <div class="space-y-3.5 bg-gray-900/20 p-3 rounded-xl border border-gray-800/60">
-                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider">Typography Compositor</label>
+                if (!createRes.ok) throw new Error("Neural4D connection failed.");
+                
+                const createData = await createRes.json();
+                
+                // Neural4D returns a list of UUIDs for the tasks
+                if (!createData.uuids || createData.uuids.length === 0) {
+                     throw new Error("Failed to start task. Check your API balance (requires 60 Power credits).");
+                }
+                
+                const uuid = createData.uuids[0];
+                let isFinished = false;
+                let modelUrl = "";
+
+                // STEP 2: Poll Neural4D for the generated result
+                const statusUrl = "https://alb.neural4d.com:3000/api/retrieveModel";
+
+                while (!isFinished) {
+                    statusText.innerText = `Rendering model (ID: ${uuid.substring(0,5)}...). This takes about 90 seconds...`;
+                    await sleep(5000); // Check every 5 seconds
                     
-                    <div class="space-y-1">
-                        <textarea id="text-input" rows="2" class="w-full bg-gray-950/80 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 tracking-wide transition font-medium" placeholder="Enter text here...">PRO STUDIO</textarea>
-                    </div>
+                    const statusRes = await fetch(statusUrl, {
+                        method: "POST",
+                        headers: { 
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${apiKey}` 
+                        },
+                        body: JSON.stringify({ uuid: uuid })
+                    });
+                    
+                    const statusData = await statusRes.json();
+                    const codeStatus = statusData.codeStatus;
+                    
+                    if (codeStatus === 0) { 
+                        // 0 means complete!
+                        isFinished = true;
+                        modelUrl = statusData.modelUrl;
+                    } else if (codeStatus === -3 || codeStatus < 0) { 
+                        // Negative numbers mean failed
+                        throw new Error(statusData.message || "Generation failed on Neural4D server.");
+                    }
+                    // If codeStatus is 1, it's still pending so the loop continues
+                }
 
-                    <!-- NEW FEATURE: ADJUSTABLE FONT TEXT SIZE CONTROLLER -->
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-gray-400">Font Structural Size Scale</span>
-                            <span id="val-size" class="text-indigo-400 jetbrains-mono">0.65</span>
-                        </div>
-                        <input type="range" id="mesh-size" min="0.15" max="2.0" step="0.05" value="0.65" class="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
+                // STEP 3: Display and Save
+                currentActiveModel = { name: prompt, tag: res, url: modelUrl };
+                document.getElementById('main-viewer').src = modelUrl;
+                viewerWrapper.style.display = 'block';
+                
+                historyList.unshift(currentActiveModel);
+                localStorage.setItem('ai_3d_history', JSON.stringify(historyList));
+                updateCounters();
 
-                    <!-- NEW FEATURE: 16 ADVANCED REAL-TIME FONT STYLE SELECTION MATRIX -->
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            } finally {
+                btn.disabled = false;
+                loader.style.display = 'none';
+            }
+        }
+
+        async function downloadCurrentModel() {
+            if (!currentActiveModel) return;
+            try {
+                const response = await fetch(currentActiveModel.url);
+                const blob = await response.blob();
+                
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                let safeName = currentActiveModel.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                a.download = safeName + '.glb'; 
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+            } catch (error) {
+                alert("Download failed. Your browser blocked the request.");
+            }
+        }
+
+        function toggleWishlist() {
+            if (!currentActiveModel) return;
+            if (!wishlistList.some(i => i.url === currentActiveModel.url)) {
+                wishlistList.unshift(currentActiveModel);
+                localStorage.setItem('ai_3d_wishlist', JSON.stringify(wishlistList));
+                alert('Saved to Wishlist!');
+            } else {
+                alert('Already in Wishlist!');
+            }
+            updateCounters();
+        }
+
+        updateCounters();
+    </script>
+</body>
+</html>
                     <div>
                         <label class="block text-[11px] text-gray-400 mb-1.5 font-medium">Font Family Style</label>
                         <select id="font-style-select" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-2.5 py-2 text-xs text-white font-medium focus:outline-none focus:border-indigo-500 transition cursor-pointer">
